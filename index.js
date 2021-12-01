@@ -1,13 +1,13 @@
 const express = require('express');
 const cors = require('cors');
 const { MongoClient, ObjectId } = require('mongodb');
-/* const admin = require('firebase-admin');
-const serviceAccount = require('./mobile--store-firebase-adminsdk.json'); */
+const admin = require('firebase-admin');
+const serviceAccount = require('./mobile--store-firebase-adminsdk.json');
 require('dotenv').config();
 
-/* admin.initializeApp({
+admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-}); */
+});
 
 const app = express();
 const port = process.env.PORT || 5000;
