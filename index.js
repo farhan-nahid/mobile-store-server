@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const { MongoClient, ObjectId } = require('mongodb');
 const admin = require('firebase-admin');
-const serviceAccount = require('./mobile--store-firebase-adminsdk.json');
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 require('dotenv').config();
 
 admin.initializeApp({
