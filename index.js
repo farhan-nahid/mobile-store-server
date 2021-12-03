@@ -30,7 +30,19 @@ async function run() {
     client.connect();
     const database = client.db(`${process.env.DB_NAME}`);
     const mobileCollection = database.collection('all_mobile');
-    console.log('database Connect Successfully');
+    const reviewsCollection = database.collection('reviews');
+
+    app.post('/add-reviews', async (req, res) => {
+      const review = req.body;
+      const result = await reviewsCollection.insertOne(review);
+      res.json(result);
+    });
+
+    app.get('/all-reviews', async (req, res) => {
+      const cursor = reviewsCollection.find({});
+      const allReviews = await cursor.toArray();
+      res.json(allReviews);
+    });
   } finally {
     // client.close()
   }
