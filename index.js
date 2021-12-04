@@ -73,6 +73,19 @@ async function run() {
       res.json(allOrders);
     });
 
+    // GET admin or not
+
+    app.get('/user/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { email };
+      const user = await usersCollection.findOne(query);
+      let isAdmin = false;
+      if (user?.role === 'Admin') {
+        isAdmin = true;
+      }
+      res.json({ admin: isAdmin });
+    });
+
     // POST a single product
 
     app.post('/add-product', async (req, res) => {
