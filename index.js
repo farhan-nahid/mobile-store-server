@@ -120,6 +120,16 @@ async function run() {
       res.json(result);
     });
 
+    // PUT admin
+
+    app.put('/users/admin', async (req, res) => {
+      const user = req.body;
+      const filter = { email: user.email };
+      const updateUser = { $set: { role: 'Admin' } };
+      const result = await usersCollection.updateOne(filter, updateUser);
+      res.json(result);
+    });
+
     // PUT order status
 
     app.put('/order/:id', async (req, res) => {
