@@ -1,16 +1,19 @@
 const express = require('express');
 const cors = require('cors');
 const { MongoClient, ObjectId } = require('mongodb');
-// const admin = require('firebase-admin');
-// const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+const admin = require('firebase-admin');
 require('dotenv').config();
-
-// admin.initializeApp({
-//   credential: admin.credential.cert(serviceAccount),
-// });
 
 const app = express();
 const port = process.env.PORT || 5000;
+
+// FIREBASE Service Account
+
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
 
 // USE MIDDLEWARE
 
@@ -24,6 +27,18 @@ const client = new MongoClient(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
+
+async function verifyJwtToken(req, res, next) {
+  if (req.headers?.authorization?.startsWith('Bearer ')) {
+    const jwt = req.headers.authorization.split(' ')[1];
+    try {
+      const decodedUser = await admin.auth().verifyIdToken(jwt);
+      req.decodedEmail = decodedUser.email;
+    } catch {}
+  }
+
+  next();
+}
 
 async function run() {
   try {
@@ -133,14 +148,24 @@ async function run() {
       res.json(result);
     });
 
-    // PUT admin
+    // PUT admin & check with JWT Token  he/she is admin or not ?
 
-    app.put('/users/admin', async (req, res) => {
-      const user = req.body;
-      const filter = { email: user.email };
-      const updateUser = { $set: { role: 'Admin' } };
-      const result = await usersCollection.updateOne(filter, updateUser);
-      res.json(result);
+    app.put('/users/admin', verifyJwtToken, async (req, res) => {
+      const newAdmin = req.body;
+      const email = req.decodedEmail;
+      if (email) {
+        const requester = await usersCollection.findOne({ email });
+        if (requester.role === 'Admin') {
+          const filter = { email: newAdmin.email };
+          const updateUser = { $set: { role: 'Admin' } };
+          const result = await usersCollection.updateOne(filter, updateUser);
+          res.json(result);
+        }
+      } else {
+        req
+          .status(403)
+          .json({ message: 'You do not have access to make admin' });
+      }
     });
 
     // PUT order status
