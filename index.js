@@ -32,6 +32,7 @@ async function run() {
     const mobileCollection = database.collection('all_mobile');
     const reviewsCollection = database.collection('reviews');
     const orderCollection = database.collection('orders');
+    const usersCollection = database.collection('users');
 
     // GET all products data
 
@@ -96,6 +97,29 @@ async function run() {
       res.json(result);
     });
 
+    // POST a user
+
+    app.post('/users', async (req, res) => {
+      const user = req.body;
+      const result = await usersCollection.insertOne(user);
+      res.json(result);
+    });
+
+    // PUT user
+
+    app.put('/users', async (req, res) => {
+      const user = req.body;
+      const filter = { user: user.email };
+      const option = { upsert: true };
+      const updateUser = { $set: user };
+      const result = await usersCollection.updateOne(
+        filter,
+        updateUser,
+        option
+      );
+      res.json(result);
+    });
+
     // PUT order status
 
     app.put('/order/:id', async (req, res) => {
@@ -107,7 +131,7 @@ async function run() {
           status: status,
         },
       };
-      const result = orderCollection.updateOne(filter, updatingStatus);
+      const result = await orderCollection.updateOne(filter, updatingStatus);
       res.json(result);
     });
 
